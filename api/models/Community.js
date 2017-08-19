@@ -215,6 +215,8 @@ module.exports = {
                 });
             }
             else {
+              console.log(time(), ") Completed");
+              semaphore = 1;
               return null;
             }
           }

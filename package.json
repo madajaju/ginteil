@@ -29,9 +29,7 @@
     "test": "npm run lint && npm run custom-tests && echo 'Done.'",
     "lint": "node ./node_modules/eslint/bin/eslint . --max-warnings=0 && echo '✔  Your code looks good.'",
     "debug": "node debug app.js",
-    "build-jobs": "node ./api/jobs/build",
-    "build-app": "docker build . --file deploy/Dockerfile -t ginteil/app",
-    "build": "npm run-script build-jobs && npm run-script build-app"
+    "build": "node ./deploy/build"
   },
   "main": "app.js",
   "repository": {

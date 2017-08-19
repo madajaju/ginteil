@@ -1,5 +1,12 @@
 {
   "generators": {
-    "modules": {}
+     "modules": {
+        "bouquet": "/Users/dwpulsip/yoly/bouquet/bouquet",
+        "bouquet-Actor": "/Users/dwpulsip/yoly/bouquet/bouquet-Actor",
+        "bouquet-UseCase": "/Users/dwpulsip/yoly/bouquet/bouquet-UseCase",
+        "bouquet-SubSystem": "/Users/dwpulsip/yoly/bouquet/bouquet-SubSystem",
+        "bouquet-Scenario": "/Users/dwpulsip/yoly/bouquet/bouquet-Scenario",
+        "bouquet-uservice": "/Users/dwpulsip/yoly/bouquet/sails-generate-bouquet-uservice"
+    }
   }
 }

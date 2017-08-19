@@ -27,6 +27,7 @@ module.exports = {
     var id = req.query.id;
     var score = req.query.score;
     res.send("OK");
+    console.log(time(), ") ID:", id);
     if (id) {
       return Individual.update({id: id}, {score: score}).meta({fetch: true}).then(function (individual) {
         return Community.findOne({id: individual[0].community});
