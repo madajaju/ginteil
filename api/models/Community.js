@@ -215,7 +215,7 @@ module.exports = {
                 });
             }
             else {
-              console.log(time(), ") Completed");
+              console.log("Completed");
               semaphore = 1;
               return null;
             }

@@ -9,13 +9,13 @@ services:
     ports:
          - "27017:27017"
   ginteil:
-    image: ginteil/web
+    image: localhost:5000/ginteil/web
     expose:
       - 1337
     ports:
       - "1337:1337"
   individual:
-    image: ginteil/individual
+    image: localhost:5000/ginteil/individual
     deploy:
             mode: replicated
             replicas: 5
