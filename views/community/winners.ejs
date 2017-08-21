@@ -1,0 +1,14 @@
+<table>
+  <tr>
+    <th>Score</th>
+    <th>Chromosome</th>
+  </tr>
+    <% _.each(winners, function(winner) { %>
+        <tr>
+          <td><%= winner.score %></td>
+          <td><%= winner.chromosome %></td>
+        </tr>
+        <% }) %>
+</table>
+
+

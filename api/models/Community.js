@@ -20,7 +20,8 @@ module.exports = {
     populationSize: {type: 'number', defaultsTo: 100},
     generations: {type: "number"},
     currentGeneration: {type: "number"},
-    state: {type: "string"}
+    state: {type: "string"},
+    winners: {type: "json"}
   },
 
   run: function (self, generations) {
@@ -30,7 +31,8 @@ module.exports = {
     console.log("ID:", self.id);
     return Community.update({id: self.id}, {
       generations: generations,
-      currentGeneration: 1
+      currentGeneration: 1,
+      winners: []
     }).meta({fetch: true}).then(function (me) {
       console.log("ME:", me[0]);
       Community.evaluate(me[0]);
@@ -50,10 +52,12 @@ module.exports = {
     });
   },
 
-  _killOff: function (self) {
+  async _killOff: function (self) {
     // Sort the individuals
     var sorted = _.sortBy(self.individuals, 'score');
     console.log(self.currentGeneration + ") Top Score:", sorted[0].score + " => " + sorted[0].chromosome);
+    self.winners.push(sorted[0]);
+    await Community.update({id: self.id}, {winners: self.winners});
     var sizeOfPopulation = sorted.length;
     var sizeOfSurvivors = Math.floor(sizeOfPopulation * self.survivalRate);
     var survivors = sorted.slice(0, sizeOfSurvivors);
