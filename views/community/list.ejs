@@ -1,11 +1,13 @@
 <table>
   <tr>
+    <th>ID</th>
     <th>Community</th>
     <th>Score</th>
     <th>Chromo</th>
   </tr>
     <% _.each(communities, function(community) { %>
         <tr>
+          <td><%= community.id %></td>
           <td><%= community.generations %></td>
           <td><%= community.individuals[0].score %></td>
           <td><%= community.individuals[0].chromosome %></td>
