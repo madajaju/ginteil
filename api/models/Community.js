@@ -52,12 +52,12 @@ module.exports = {
     });
   },
 
-  async _killOff: function (self) {
+  _killOff: function (self) {
     // Sort the individuals
     var sorted = _.sortBy(self.individuals, 'score');
     console.log(self.currentGeneration + ") Top Score:", sorted[0].score + " => " + sorted[0].chromosome);
     self.winners.push(sorted[0]);
-    await Community.update({id: self.id}, {winners: self.winners});
+    Community.update({id: self.id}, {winners: self.winners});
     var sizeOfPopulation = sorted.length;
     var sizeOfSurvivors = Math.floor(sizeOfPopulation * self.survivalRate);
     var survivors = sorted.slice(0, sizeOfSurvivors);
