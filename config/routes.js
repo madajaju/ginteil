@@ -35,6 +35,8 @@ module.exports.routes = {
    *                                                                          *
    ***************************************************************************/
 
+   'get /community/list': 'CommunityController.list',
+   'get /community/winners': 'CommunityController.winners',
    'get /community/start': 'CommunityController.start',
    'get /community/finishedIndividual': 'CommunityController.finishedIndividual'
 

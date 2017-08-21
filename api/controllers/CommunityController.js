@@ -36,6 +36,20 @@ module.exports = {
       });
     }
   }
+	list: function(req, res) {
+		console.og("List", req);
+		Community.list().then(function(communities) {
+			return res.view('community/list', {communities:communities});
+		}
+	}
+	winners: function(req, res) {
+		console.og("Winners", req.query);
+		var id = req.query.id;
+
+		Community.findOne({id:id}).then(function(community) {
+			return res.view('community/winners', {community:community});
+		}
+	}
 }
 ;
 
