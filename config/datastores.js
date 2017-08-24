@@ -48,6 +48,9 @@ module.exports.datastores = {
     *    (See https://sailsjs.com/config/datastores for help.)                 *
     *                                                                          *
     ***************************************************************************/
+    adapter: 'sails-mongo',
+    url: 'mongodb://mongo:27017/ginteil'
+
     // adapter: 'sails-mysql',
     // url: 'mysql://user:password@host:port/database',
 

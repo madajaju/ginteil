@@ -9,16 +9,28 @@ var Promise = require("bluebird");
 
 module.exports = {
 
+  submit: function(req,res) {
+    return res.view("community/submit");
+  },
+
   start: function (req, res) {
     console.log("Community Launch!");
-    Community.initialize("Mine", 100, 10, 0.25, function (id, chromo) {
-      console.log("Fetching score: " + id);
-      console.log("Community:" + community.id);
-      var cid = community.id + "." + id;
-      fetch("http://localhost:3000?id=" + id + "&chromo=" + chromo + "&callback=http://localhost:1337/individual/finished?id=" + cid);
+    console.log("Community Launch!", req.query);
+
+    Community.initialize( {name:req.query.name,
+      survivalRate: req.query.survivalRate,
+      crossOvers: req.query.crossOvers,
+      mutationRate: req.query.mutationRate,
+      populationSize: req.query.populationSize,
+      chromoSize: req.query.chromoSize,
+      generations: req.query.generations,
+      evalFn: function (id, chromo) {
+        var cid = community.id + "." + id;
+        fetch("http://localhost:3000?id=" + id + "&chromo=" + chromo + "&callback=http://localhost:1337/individual/finished?id=" + cid);
+      }
     }).then(function (community) {
-      res.send("OK");
-      Community.run(community, 100);
+      res.redirect('winners?id=' + community.id);
+      Community.run(community, req.body);
       return community;
     });
   },
@@ -27,7 +39,6 @@ module.exports = {
     var id = req.query.id;
     var score = req.query.score;
     res.send("OK");
-    console.log(time(), ") ID:", id);
     if (id) {
       return Individual.update({id: id}, {score: score}).meta({fetch: true}).then(function (individual) {
         return Community.findOne({id: individual[0].community});
@@ -37,16 +48,14 @@ module.exports = {
     }
   },
 	list: function(req, res) {
-		console.log("List", req);
-		Community.list().then(function(communities) {
+		Community.find().populateAll().then(function(communities) {
 			return res.view('community/list', {communities:communities});
 		});
 	},
 	winners: function(req, res) {
-		console.log("Winners", req.query);
 		var id = req.query.id;
 
-		Community.findOne({id:id}).then(function(community) {
+		Community.findOne({id:id}).populateAll().then(function(community) {
 			return res.view('community/winners', {community:community});
 		});
 	}

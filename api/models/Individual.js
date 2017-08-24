@@ -11,7 +11,8 @@ module.exports = {
     score: {type: "number"},
     chromosome: { type: "string"},
     gens: { type: "number"},
-    community: {model: 'community'}
+    community: {model: 'community'},
+    toplist: {model: 'community'}
   }
 
 };

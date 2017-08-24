@@ -7,5 +7,12 @@
 
 module.exports = {
 
+  list: function(req, res) {
+    Individual.find().then(function(indivs) {
+      console.log("Individuals:", indivs);
+      return res.view("individual/list", {individuals:indivs});
+    });
+  }
+
 };
 

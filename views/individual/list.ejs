@@ -1,0 +1,10 @@
+<%= indivs.length() %>
+
+<table>
+  <% _.each(indivs, function(indiv) { %>
+  <tr>
+    <td><%= indiv.score %></td>
+    <td><%= indiv.chromosome %></td>
+  </tr>
+  <% }); %>
+</table>

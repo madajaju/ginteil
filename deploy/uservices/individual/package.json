@@ -2,7 +2,8 @@
   "main": "index.js",
   "scripts": {
     "start": "micro",
-    "build": "docker build . -t ginteil/individual"
+    "build": "docker build . -t localhost:5000/ginteil/individual",
+    "deploy": "docker push localhost:5000/ginteil/individual"
   },
   "dependencies": {
     "micro": "latest",

@@ -17,24 +17,24 @@ module.exports = {
   attributes: {
     individuals: {collection: 'individual', via: 'community'},
     survivalRate: {type: 'number', defaultsTo: 0.25},
+    crossOvers: {type: 'number', defaultsTo: 2},
+    mutationRate: {type: 'number', defaultsTo: 0.10},
     populationSize: {type: 'number', defaultsTo: 100},
+    chromoSize: {type: 'number', defaultsTo: 100},
     generations: {type: "number"},
     currentGeneration: {type: "number"},
     state: {type: "string"},
-    winners: {type: "json"}
+    winners: {collection: 'individual', via: 'toplist'}
   },
 
-  run: function (self, generations) {
+  run: function (self) {
     console.log("Evaluating Community!");
-    self.generations = generations;
     self.currentGeneration = 0;
     console.log("ID:", self.id);
     return Community.update({id: self.id}, {
-      generations: generations,
       currentGeneration: 1,
       winners: []
     }).meta({fetch: true}).then(function (me) {
-      console.log("ME:", me[0]);
       Community.evaluate(me[0]);
       return null;
     });
@@ -56,8 +56,9 @@ module.exports = {
     // Sort the individuals
     var sorted = _.sortBy(self.individuals, 'score');
     console.log(self.currentGeneration + ") Top Score:", sorted[0].score + " => " + sorted[0].chromosome);
+
     self.winners.push(sorted[0]);
-    Community.update({id: self.id}, {winners: self.winners});
+
     var sizeOfPopulation = sorted.length;
     var sizeOfSurvivors = Math.floor(sizeOfPopulation * self.survivalRate);
     var survivors = sorted.slice(0, sizeOfSurvivors);
@@ -96,7 +97,7 @@ module.exports = {
       var parent1 = breedPool.pop();
       var parent2 = breedPool.pop();
       // Calculate the average number of maxNumberOfChildren
-      var children = Community._breedCouple(numberOfChildren, parent1.chromosome, parent2.chromosome);
+      var children = Community._breedCouple(numberOfChildren, self.crossOvers, parent1.chromosome, parent2.chromosome);
       _.each(children, function (child) {
         self.individuals.push(child)
       });
@@ -105,7 +106,7 @@ module.exports = {
     if (breedPool.length > 0) {
       var chromo1 = breedPool[0].chromosome;
       var chromo2 = Community._mutateIndividual(chromo1);
-      var children = Community._breedCouple(numberOfChildren, chromo1, chromo2);
+      var children = Community._breedCouple(numberOfChildren, self.crossOvers, chromo1, chromo2);
       _.each(children, function (child) {
         self.individuals.push(child);
       });
@@ -119,20 +120,32 @@ module.exports = {
     });
     self.individuals = uniqSort;
   },
-  _breedCouple: function (numberOfChildren, chrom1, chrom2) {
+  _breedCouple: function (numberOfChildren, crossOvers, chrom1, chrom2) {
     var children = [];
     var maxLength = chrom1.length;
     if (chrom2.length > maxLength) {
       maxLength = chrom2.length;
     }
     for (var i = numberOfChildren; i > 0; --i) {
-      var crossOver = Math.floor(Math.random() * maxLength);
-      var c1a = chrom1.substring(0, crossOver);
-      var c1b = chrom1.substring(crossOver);
-      var c2a = chrom2.substring(0, crossOver);
-      var c2b = chrom2.substring(crossOver);
-      var newChrome1 = c1a + c2b;
-      var newChrome2 = c2a + c1b;
+      // Multiple Crossover sites.
+      var newChrome1 = "";
+      var newChrome2 = "";
+      for (var j = 0; j < crossOvers; j++) {
+        var endOfSegment = Math.floor((j + 1) * (maxLength / crossOvers));
+        var startOfSegment = Math.floor(j * (maxLength / crossOvers));
+        var costart = Math.floor(j * (maxLength / crossOvers)) + (Math.floor(Math.random() * maxLength / crossOvers));
+        // Length calculated based on the costart and the endOfSegment. FIXME
+        var length = endOfSegment - costart;
+        var coend = costart + Math.floor(Math.random() * length);
+        var c1a = chrom1.substring(startOfSegment, costart);
+        var c1b = chrom1.substring(costart, coend);
+        var c1c = chrom1.substring(coend, endOfSegment);
+        var c2a = chrom2.substring(0, costart);
+        var c2b = chrom2.substring(costart, coend);
+        var c2c = chrom2.substring(coend, endOfSegment);
+        newChrome1 += c1a + c2b + c1c;
+        newChrome2 += c2a + c1b + c2c;
+      }
       children.push({score: 0, chromosome: newChrome1});
       i--;
       if (i > 0) {
@@ -142,23 +155,26 @@ module.exports = {
     return children;
   },
 
-  _mutate: function (self, mutations) {
+  _mutate: function (self) {
     _.each(self.individuals, function (individual) {
       if (!self.score) {
+        var mutations = Math.floor(Math.random() * individual.chromosome.length * self.mutationRate) + 1;
         var length = individual.chromosome.length;
         for (var i = 0; i < mutations; i++) {
           individual.chromosome = Community._mutateIndividual(individual.chromosome);
         }
       }
     });
-  },
+  }
+  ,
 
   _mutateIndividual: function (chromo) {
     var length = chromo.length;
     var loc = Math.floor(Math.random() * length) + 1;
-    var char = (Math.random().toString(36) + '0').slice(2, 3);
+    var char = (Math.random().toString(16) + '0').slice(2, 3);
     return chromo.substr(0, loc - 1) + char + chromo.substr(loc);
-  },
+  }
+  ,
 
   score: function (self) {
     self.score = {max: -1, min: 99999999, average: 0, sum: 0, num: 0};
@@ -175,13 +191,18 @@ module.exports = {
     // self.score.average = self.score.sum / self.individuals.length;
   },
 
-  initialize: function (name, popSize, chromoSize, survivalRate, evalFn) {
-    var me = {name: name, individuals: [], populationSize: popSize, survivalRate: survivalRate, evalFn: evalFn, currentGeneration:1};
+  initialize: function (opts) {
+    var me = opts;
+    me.currentGeneration = 1;
+
     return Community.create(me).meta({fetch: true}).then(function (community) {
       var retVal = community;
       var individuals = [];
-      for (var i = popSize; i > 0; i--) {
-        var chromo = (Math.random().toString(36) + '00000000000000000').slice(2, chromoSize + 2);
+      for (var i = community.populationSize; i > 0; i--) {
+        var chromo = "";
+        for (var j = community.chromoSize; j > 0; j--) {
+          chromo += (Math.random().toString(16) + '0').slice(2, 3);
+        }
         individuals.push({score: 0, chromosome: chromo, gens: 0});
       }
       return Individual.createEach(individuals).meta({fetch: true}).then(function (indivs) {
@@ -206,7 +227,7 @@ module.exports = {
             if (community.currentGeneration < community.generations) {
               // Community.score(self);
               // Check if already ran the
-              var currentGeneration = community.currentGeneration+1;
+              var currentGeneration = community.currentGeneration + 1;
               semaphore = -1;
               return Community.update({id: community.id}, {currentGeneration: currentGeneration, state: "Cycle"})
                 .meta({fetch: true})
@@ -231,11 +252,13 @@ module.exports = {
       }
       return null;
     })
-  },
+  }
+  ,
 
   judgement: function (self) {
     return Community.findOne({id: self.id}).populateAll().then(function (me) {
-      Community._killOff(me);
+      var survivors = Community._killOff(me);
+      var topIndividual = survivors[0];
       Community._breed(me);
       // Only get the ones that have a score of 0
       var newIndivs = _.remove(me.individuals, function (indiv) {
@@ -250,12 +273,22 @@ module.exports = {
         });
         return Community.replaceCollection(self.id, 'individuals').members(ids);
       }).then(function () {
-        return Individual.destroy({where: {community: null}}).meta({fetch:true}).then(function(items) { console.log("Removed:", items.length)});
+        return Community.addToCollection(self.id, 'winners').members([topIndividual.id]);
+      }).then(function () {
+        return Individual.destroy({
+          where: {
+            community: null,
+            toplist: null
+          }
+        }).meta({fetch: true}).then(function (items) {
+          console.log("Removed:", items.length)
+        });
       }).then(function () {
         return Community.findOne({id: me.id}).populateAll();
       });
     });
-  },
+  }
+  ,
 
   evalFunction: function (self, id, chromo) {
     fetch("http://individual:3000?id=" + id + "&chromo=" + chromo + "&callback=http://ginteil:1337/community/finishedIndividual?id=" + id);

@@ -3,12 +3,25 @@
     <th>Score</th>
     <th>Chromosome</th>
   </tr>
-    <% _.each(community.winners, function(winner) { %>
-        <tr>
-          <td><%= winner.score %></td>
-          <td><%= winner.chromosome %></td>
-        </tr>
-        <% }) %>
+  <% _.each(community.winners, function(winner) { %>
+  <tr>
+    <td><%= winner.score %></td>
+          <%
+          var i = 0;
+          for(var i = 0; i < winner.chromosome.length;) {
+            var value = "";
+            var color = [];
+            for (var j = 0; j < 3 && i < winner.chromosome.length; j++) {
+              var char = winner.chromosome[i];
+              value += char;
+              color += Math.floor(256 - ((256 * char) / 16)).toString(16); // Convert it to hex
+              i++;
+            } %>
+          <td bgcolor=<%= color %> ><%= value %></td>
+          <%
+          } %>
+  </tr>
+  <% }) %>
 </table>
 
 
