@@ -6,7 +6,6 @@ pipeline {
     stage('Build') {
       steps {
         sh 'npm run-script build'
-        sh 'npm run-script deploy-app'
       }
     }
     stage('Test') {
