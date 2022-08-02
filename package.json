@@ -6,7 +6,7 @@
   "keywords": [],
   "dependencies": {
     "async": "2.0.1",
-    "grunt": "1.0.1",
+    "grunt": "1.5.3",
     "lodash": "3.10.1",
     "micro": "^8.0.1",
     "node-fetch": "latest",
