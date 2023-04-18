@@ -7,7 +7,7 @@
   "dependencies": {
     "async": "2.0.1",
     "grunt": "1.0.1",
-    "lodash": "3.10.1",
+    "lodash": "4.17.21",
     "micro": "^8.0.1",
     "node-fetch": "latest",
     "redis": "^2.7.1",
